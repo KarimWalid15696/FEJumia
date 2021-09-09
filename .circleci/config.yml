@@ -4,11 +4,14 @@ workflows:
   test-env-vars:
     jobs:
       - build
+    
 
 jobs:
   build:
     docker:
       - image: cimg/base:2020.01
+    environment:
+        MY_ENV_VAR: Karim
     steps:
       - checkout
       - run:
