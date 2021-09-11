@@ -1,20 +1,73 @@
 version: 2.1
 
-workflows:
-  test-env-vars:
-    jobs:
-      - build
-    
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      # Add parameter here   
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            # Your code here
+            exit 1
 
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      # Add parameter here     
+    steps:
+      - run:
+          name: Revert migrations
+          # Add when this will run
+          command: |
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+            SUCCESS = 1
+            if(( $SUCCESS==1 )); 
+            then
+            #  cd ~/project/backend
+            #  npm install
+            #  Add revert code here. You can find this in the Getting Started section.
+              exit 1
+            fi
+            
 jobs:
-  build:
+  build-frontend:
     docker:
-      - image: cimg/base:2020.01
-    environment:
-        MY_ENV_VAR: Karim
+      - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: [frontend-build]
       - run:
-          name: "echo an env var that is part of our project"
+          name: Build front-end
           command: |
-            echo $MY_ENV_VAR
+            npm i
+            exit 1
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end build
+          command: |
+             npm i
+             exit 1
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+     
+
+workflows:
+  default:
+    jobs:
+      - build-frontend
+      - build-backend
